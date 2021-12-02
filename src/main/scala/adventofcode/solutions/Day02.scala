@@ -5,18 +5,20 @@ import scala.util.chaining.*
 
 @main def Day02 = Day(2) { (input, part) =>
 
-  sealed abstract class Instruction
-  case object Forward extends Instruction
-  case object Down extends Instruction
-  case object Up extends Instruction
+  enum Instruction:
+    case Forward
+    case Down
+    case Up
+  import Instruction._
 
-  val instructions = input.toLines.map(_.split(" ")).map {
-    case seq =>
-      val instruction = seq(0) match
+  val instructions = input.toLines.map {
+    case s"$instruction $x" => (
+      instruction match
         case "forward" => Forward
         case "down" => Down
-        case "up" => Up
-      (instruction, seq(1).toInt)
+        case "up" => Up,
+      x.toInt
+    )
   }
 
   part(1) = instructions.foldLeft((0, 0)) { case ((horizontal, depth), (instruction, x)) =>

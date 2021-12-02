@@ -8,8 +8,6 @@ import adventofcode.Definitions.*
 
   part(1) = ns.zip(ns.tail).count(_ < _)
 
-  val three = ns.sliding(3).map(_.sum).toSeq
-
-  part(2) = three.zip(three.tail).count(_ < _)
+  part(2) = ns.zip(ns.drop(3)).count(_ < _)
 
 }
