@@ -8,18 +8,13 @@ import adventofcode.Definitions.*
 
   def fromBinary(s: IndexedSeq[Char]): Int = Integer.parseInt(s.mkString, 2)
 
-  val counts = lines.transpose.map(_.groupBy(identity).view.mapValues(_.size).toMap)
+  part(1) = lines.transpose.map(_.groupBy(identity).toIndexedSeq.sortBy(_._2.size).map(_._1)).transpose.map(fromBinary).product
 
-  part(1) = fromBinary(counts.map(_.maxBy(_._2)._1)) * fromBinary(counts.map(_.minBy(_._2)._1))
-
-  def iterate(list: Seq[String], index: Int, isMax: Boolean): String =
+  def iterate(list: Seq[String], index: Int, j: Int): IndexedSeq[Char] =
     list match
-      case h +: Seq() => h
-      case _ =>
-        val groups = list.groupBy(_(index)).map((c, seq) => (seq.size, c) -> seq)
-        val (_, seq) = if isMax then groups.maxBy(_._1) else groups.minBy(_._1)
-        iterate(seq, index + 1, isMax)
+      case Seq(h) => h
+      case _ => iterate(list.groupBy(_(index)).map((c, seq) => (seq.size, c) -> seq).toSeq.sortBy(_._1).map(_._2)(j), index + 1, j)
 
-  part(2) = fromBinary(iterate(lines, 0, isMax = true)) * fromBinary(iterate(lines, 0, isMax = false))
+  part(2) = (0 until 2).map(iterate(lines, 0, _)).map(fromBinary).product
 
 }
