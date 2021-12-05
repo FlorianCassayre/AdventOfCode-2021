@@ -17,7 +17,7 @@ _My solutions to the 2021 edition of [Advent of Code](https://adventofcode.com/2
   | **[02](https://adventofcode.com/2021/day/2)** | [solution](src/main/scala/adventofcode/solutions/Day02.scala) | `00:02:18 / 414` | `00:05:03 / 899` |
   | **[03](https://adventofcode.com/2021/day/3)** | [solution](src/main/scala/adventofcode/solutions/Day03.scala) | `00:12:08 / 3949` | `00:36:11 / 3416` |
   | **[04](https://adventofcode.com/2021/day/4)** | [solution](src/main/scala/adventofcode/solutions/Day04.scala) | `00:15:35 / 678` | `00:22:21 / 807` |
-  | **[05](https://adventofcode.com/2021/day/5)** | [](src/main/scala/adventofcode/solutions/Day05.scala) |  |  |
+  | **[05](https://adventofcode.com/2021/day/5)** | [solution](src/main/scala/adventofcode/solutions/Day05.scala) |  |  |
   | **[06](https://adventofcode.com/2021/day/6)** | [](src/main/scala/adventofcode/solutions/Day06.scala) |  |  |
   | **[07](https://adventofcode.com/2021/day/7)** | [](src/main/scala/adventofcode/solutions/Day07.scala) |  |  |
   | **[08](https://adventofcode.com/2021/day/8)** | [](src/main/scala/adventofcode/solutions/Day08.scala) |  |  |
@@ -41,7 +41,7 @@ _My solutions to the 2021 edition of [Advent of Code](https://adventofcode.com/2
 
 </div>
 
-The third and last row indicate the time and rank I obtained for that part.
+The third and last row indicate the time and rank I obtained for that part. Empty cells mean no participation.
 
 In order to make the challenge more interesting, I set myself the following rules:
 
