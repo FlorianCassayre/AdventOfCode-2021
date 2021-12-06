@@ -15,7 +15,7 @@ object Definitions:
     case _ => N | DayNumberHelper[N - 1]
   type DayNumber = DayNumberHelper[25]
 
-  opaque type Input = String
+  opaque type Input <: String = String
   type Output = Any
 
   private inline def dayValue[N <: DayNumber]: N = constValue[N]
