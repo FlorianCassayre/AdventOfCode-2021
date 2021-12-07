@@ -5,11 +5,10 @@ import scala.util.chaining.*
 
 @main def Day07 = Day(7) { (input, part) =>
 
-  val ns = input.split(",").map(_.toInt)
-  val range = (ns.min to ns.max)
+  val ns = input.split(",").map(_.toInt).sorted
 
-  part(1) = range.map(v => ns.map(x => Math.abs(v - x)).sum).min
+  part(1) = ns(ns.size / 2).pipe(x => ns.map(y => Math.abs(x - y)).sum)
 
-  part(2) = range.map(v => ns.map(x => Math.abs(v - x).pipe(y => y * (y + 1) / 2)).sum).min
+  part(2) = (ns.sum / ns.size).pipe(x => ns.map(y => Math.abs(x - y).pipe(z => z * (z + 1) / 2)).sum)
 
 }
