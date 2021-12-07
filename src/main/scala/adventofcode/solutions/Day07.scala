@@ -7,8 +7,8 @@ import scala.util.chaining.*
 
   val ns = input.split(",").map(_.toInt).sorted
 
-  part(1) = ns(ns.size / 2).pipe(x => ns.map(y => Math.abs(x - y)).sum)
+  part(1) = ns.map(ns(ns.size / 2) - _ pipe(_.abs)).sum
 
-  part(2) = (ns.sum / ns.size).pipe(x => ns.map(y => Math.abs(x - y).pipe(z => z * (z + 1) / 2)).sum)
+  part(2) = (ns.head to ns.last).map(x => ns.map(x - _ pipe(_.abs) pipe(y => y * (y + 1) / 2)).sum).min
 
 }
