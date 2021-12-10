@@ -12,10 +12,7 @@ object Reflect:
       val dayPadded = f"$day%02d"
       val method = Symbol.requiredMethod(s"adventofcode.solutions.Day$dayPadded")
       val testData = method.annotations.nonEmpty match { // Cheap trick to determine if the method is real or mocked
-        case true =>
-          println()
-          println((Ref(method)).show)
-          ("test", Ref(method))
+        case true => ("test", Ref(method))
         case false => ("ignore", '{ () }.asTerm)
       }
       (s"day $day", testData)
