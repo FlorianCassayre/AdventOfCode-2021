@@ -21,18 +21,17 @@ import scala.util.chaining.*
           if state(i)(j) > 9 && !flashed.contains(t)
         yield t
       if toFlash.nonEmpty then
-        val newState = toFlash.foldLeft(state) { case (state, (i, j)) =>
-          val r = -1 to 1
-          val adjacent =
-            for
-              id <- r
-              jd <- r
-              i1 = i + id
-              j1 = j + jd
-              if state.indices.contains(i1) && state(i1).indices.contains(j1)
-            yield (i1, j1)
-          adjacent.foldLeft(state) { case (state, (i, j)) => state.updated(i, state(i).updated(j, state(i)(j) + 1)) }
-        }
+        val r = -1 to 1
+        val indices =
+          for
+            (i, j) <- toFlash
+            id <- r
+            jd <- r
+            i1 = i + id
+            j1 = j + jd
+            if state.indices.contains(i1) && state(i1).indices.contains(j1)
+          yield (i1, j1)
+        val newState = indices.foldLeft(state) { case (state, (i, j)) => state.updated(i, state(i).updated(j, state(i)(j) + 1)) }
         flash(newState, flashed ++ toFlash)
       else
         (state.zipWithIndex.map((row, i) => row.zipWithIndex.map((v, j) => if flashed.contains((i, j)) then 0 else v)), flashed.size)

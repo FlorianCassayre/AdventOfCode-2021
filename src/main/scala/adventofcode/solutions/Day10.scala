@@ -5,13 +5,13 @@ import adventofcode.Definitions.*
 @main def Day10 = Day(10) { (input, part) =>
 
   val (closing, costError, costComplete) =
-    val data = Map(
-      '(' -> (')', 3, 1),
-      '[' -> (']', 57, 2),
-      '{' -> ('}', 1197, 3),
-      '<' -> ('>', 25137, 4)
+    val data = Seq(
+      ('(', ')', 3, 1),
+      ('[', ']', 57, 2),
+      ('{', '}', 1197, 3),
+      ('<', '>', 25137, 4)
     )
-    (data.map { case (o, (c, _, _)) => o -> c }, data.map { case (_, (c, s, _)) => c -> s }, data.map { case (_, (c, _, s)) => c -> s })
+    (data.map((o, c, _, _) => o -> c).toMap, data.map((_, c, s, _) => c -> s).toMap, data.map((_, c, _, s) => c -> s).toMap)
 
   def parse(seq: Seq[Char], stack: Seq[Char] = Seq.empty): Either[Char, Seq[Char]] =
     seq match
@@ -22,7 +22,7 @@ import adventofcode.Definitions.*
           if stack.head == head then parse(tail, stack.tail) else Left(head)
       case _ => Right(stack)
 
-  val (corrupted, incomplete) = input.toLines.map(parse(_)).partitionMap(identity)
+  val (corrupted, incomplete) = input.toLines.partitionMap(parse(_))
 
   part(1) = corrupted.map(costError).sum
 
