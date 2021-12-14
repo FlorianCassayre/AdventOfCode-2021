@@ -9,28 +9,28 @@ import scala.util.chaining.*
   val initial = lines.head.toIndexedSeq
   val rules = lines.tail.tail.map { case s"$l -> $r" => l.toIndexedSeq.pipe { case IndexedSeq(a, b) => (a, b) -> r.head } }.toMap
 
-  def merge[A](a: Map[A, Long], b: Map[A, Long]): Map[A, Long] = (a.toSeq ++ b.toSeq).groupBy((k, _) => k).view.mapValues(_.map((_, v) => v).sum).toMap
-  def counts[A](seq: Seq[A]): Map[A, Long] = seq.groupBy(identity).view.mapValues(_.size.toLong).toMap
+  extension [A](self: Map[A, Long])
+    def #++(that: Map[A, Long]): Map[A, Long] = (self.toSeq ++ that.toSeq).groupBy((k, _) => k).view.mapValues(_.map((_, v) => v).sum).toMap
+    def #-(that: A): Map[A, Long] = self + (that -> (self(that) - 1))
 
-  def memoized(a: Char, b: Char, state: Map[(Char, Char, Int), Map[Char, Long]], i: Int, n: Int): (Map[Char, Long], Map[(Char, Char, Int), Map[Char, Long]]) = {
-    if i == n then
-      (counts(Seq(a, b)), state)
-    else
-      state.get((a, b, i)) match
-        case Some(v) => (v, state)
-        case None =>
-          val x = rules((a, b))
-          val (left, state1) = memoized(a, x, state, i + 1, n)
-          val (right, state2) = memoized(x, b, state1, i + 1, n)
-          val result = merge(merge(left, right), Map(x -> -1))
-          (result, state2 + ((a, b, i) -> result))
-  }
+  type Memoized = Map[(Char, Char, Int), Map[Char, Long]]
 
   def compute(n: Int): Long =
-    merge(
-      initial.zip(initial.tail).map((a, b) => memoized(a, b, Map.empty, 0, n)._1).reduce(merge),
-      counts(initial.init.tail).view.mapValues(-_).toMap
-    ).values.pipe(vs => vs.max - vs.min)
+    def divideAndConquer(a: Char, b: Char, state: Memoized, i: Int): (Map[Char, Long], Memoized) =
+      if i == n then
+        (Map(a -> 1L) #++ Map(b -> 1L), state)
+      else
+        state.get((a, b, i)) match
+          case Some(v) => (v, state)
+          case None =>
+            val x = rules((a, b))
+            divideAndConquer(a, x, state, i + 1)
+              .pipe((left, state) => divideAndConquer(x, b, state, i + 1).pipe((right, state) => (left #++ right #- x, state)))
+              .pipe((result, state) => (result, state + ((a, b, i) -> result)))
+
+    initial.zip(initial.tail).scanLeft((Map.empty[Char, Long], Map.empty: Memoized)) {
+      case ((_, state), (a, b)) => divideAndConquer(a, b, Map.empty, 0)
+    }.unzip.pipe((result, _) => initial.init.tail.foldLeft(result.reduce(_ #++ _))(_ #- _).values.pipe(vs => vs.max - vs.min))
 
   part(1) = compute(10)
 
