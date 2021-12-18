@@ -30,7 +30,7 @@ _My solutions to the 2021 edition of [Advent of Code](https://adventofcode.com/2
   | **[15](https://adventofcode.com/2021/day/15)** | [solution](src/main/scala/adventofcode/solutions/Day15.scala) | `00:51:52 / 3469` | `01:19:39 / 2672` |
   | **[16](https://adventofcode.com/2021/day/16)** | [solution](src/main/scala/adventofcode/solutions/Day16.scala) | `00:24:39 / 171` | `00:44:47 / 576` |
   | **[17](https://adventofcode.com/2021/day/17)** | [solution](src/main/scala/adventofcode/solutions/Day17.scala) | `00:12:12 / 321` | `00:19:30 / 401` |
-  | **[18](https://adventofcode.com/2021/day/18)** | [](src/main/scala/adventofcode/solutions/Day18.scala) |  |  |
+  | **[18](https://adventofcode.com/2021/day/18)** | [solution](src/main/scala/adventofcode/solutions/Day18.scala) | `01:50:25 / 1389` | `01:52:16 / 1259` |
   | **[19](https://adventofcode.com/2021/day/19)** | [](src/main/scala/adventofcode/solutions/Day19.scala) |  |  |
   | **[20](https://adventofcode.com/2021/day/20)** | [](src/main/scala/adventofcode/solutions/Day20.scala) |  |  |
   | **[21](https://adventofcode.com/2021/day/21)** | [](src/main/scala/adventofcode/solutions/Day21.scala) |  |  |
