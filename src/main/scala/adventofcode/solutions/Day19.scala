@@ -19,17 +19,19 @@ import scala.collection.View
 
   val points = input.split("\n\n").map(_.split("\n").tail.map {
     case s"$x,$y,$z" => Vec(x.toInt, y.toInt, z.toInt)
-  }.toVector).toVector
+  })
 
   case class Permutation(permutation: Seq[(Int, Int)]):
     def apply(p: Vec): Vec =
       permutation.map { case (i, s) => p(i) * s } match
         case Seq(x, y, z) => Vec(x, y, z)
+    def rotateX: Permutation = permutation match
+      case Seq(xt, (y, sy), zt) => Permutation(Seq(xt, zt, (y, -sy)))
+    def rotateY: Permutation = permutation match
+      case Seq((x, sx), yt, zt) => Permutation(Seq(yt, (x, -sx), zt))
     def inverse: Permutation = Permutation(permutation.zipWithIndex.sortBy { case ((v, _), _) => v }.map { case ((_, s), i) => (i, s) })
 
-  val permutations =
-    Seq.fill(Vec.arity)(Seq(-1, 1)).flatten.combinations(Vec.arity).flatMap(_.permutations)
-      .flatMap(signs => (0 until Vec.arity).permutations.map(permutation => Permutation(permutation.zip(signs)))).toIndexedSeq
+  val permutations = View.iterate(Set(Permutation((0 until Vec.arity).map((_, 1)))), 6)(set => set ++ set.flatMap(p => Set(p.rotateX, p.rotateY))).last.toSeq
 
   case class Transformation(offset: Vec, permutation: Permutation):
     def apply(p: Vec): Vec = permutation(p) + offset
@@ -37,44 +39,28 @@ import scala.collection.View
       val inversed = permutation.inverse
       Transformation(inversed(Zero - offset), inversed)
 
-  def search(remaining: View[(Int, Int)], representation: Map[(Int, Int), Transformation]): Map[(Int, Int), Transformation] =
-    remaining.headOption match
-      case Some((i, j)) =>
-        val (pointsI, pointsJ) = (points(i), points(j))
-        val result = permutations.indices.view.flatMap { k =>
-          val permutation = permutations(k)
-          val pointsJPermuted = pointsJ.map(permutation.apply)
-          val exhaustive =
-            for
-              vi <- pointsI.indices.view
-              vj <- pointsJPermuted.indices.view
-            yield (vi, vj)
-          exhaustive.flatMap { case (vi, vj) =>
-            val relative = pointsI(vi) - pointsJPermuted(vj)
-            val transformedJ = pointsJPermuted.map(_ + relative)
-            if pointsI.toSet.intersect(transformedJ.toSet).sizeIs >= 12 then
-              Some(Transformation(relative, permutation))
-            else
-              None
-          }
-        }.headOption
-
-        val newRepresentation = result match
-          case Some(transform) =>
-            representation +
-              ((j, i) -> transform) +
-              ((i, j) -> transform.inverse)
-          case _ => representation
-        search(remaining.tail, newRepresentation)
-      case _ => representation
-
   val initialRemaining =
     for
       i <- points.indices.view
       j <- points.indices.view.drop(i + 1).view
     yield (i, j)
 
-  val transformations = search(initialRemaining, Map.empty)
+  val transformations = initialRemaining.foldLeft(Map.empty[(Int, Int), Transformation]) { case (map, (i, j)) =>
+    val `12` = 12
+    val (pointsI, pointsJ) = (points(i), points(j))
+    val pointsISet = pointsI.toSet
+    val result = permutations.view.flatMap { permutation =>
+      val pointsJPermuted = pointsJ.map(permutation.apply)
+      for
+        vi <- pointsI.view.drop(`12` - 1)
+        vj <- pointsJPermuted.view.drop(`12` - 1)
+        relative = vi - vj
+        if pointsJPermuted.count(p => pointsISet.contains(p + relative)) >= `12`
+      yield Transformation(relative, permutation)
+    }.headOption
+
+    result.map(transform => map + ((j, i) -> transform) + ((i, j) -> transform.inverse)).getOrElse(map)
+  }
 
   val graph: Map[Int, Set[(Int, Transformation)]] =
     transformations.groupBy { case ((u, _), _) => u }.view.mapValues(_.map { case ((_, v), t) => (v, t) }.toSet).toMap
@@ -100,11 +86,10 @@ import scala.collection.View
 
   val finalPoints = points.indices.flatMap(i => finalTransformations(i).foldLeft(points(i))((ps, t) => ps.map(t.apply)))
 
-  val scanners = points.indices.map(i => finalTransformations(i).foldLeft(Zero)((p, t) => t(p)))
-
-  val distances = initialRemaining.map((i, j) => (scanners(i) - scanners(j)).abs).max
-
   part(1) = finalPoints.toSet.size
+
+  val scanners = points.indices.map(i => finalTransformations(i).foldLeft(Zero)((p, t) => t(p)))
+  val distances = initialRemaining.map((i, j) => (scanners(i) - scanners(j)).abs).max
 
   part(2) = distances
 
