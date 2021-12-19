@@ -8,12 +8,13 @@ object Reflect:
 
   private def generateAOCTestsImpl(using Quotes): Expr[Any] =
     import quotes.reflect.*
+    val ignored = Set(19)
     val values: Seq[(String, (String, Term))] = (1 to 25).map { day =>
       val dayPadded = f"$day%02d"
       val method = Symbol.requiredMethod(s"adventofcode.solutions.Day$dayPadded")
       val testData = method.annotations.nonEmpty match { // Cheap trick to determine if the method is real or mocked
-        case true => ("test", Ref(method))
-        case false => ("ignore", '{ () }.asTerm)
+        case true if !ignored.contains(day) => ("test", Ref(method))
+        case _ => ("ignore", '{ () }.asTerm)
       }
       (s"day $day", testData)
     }
