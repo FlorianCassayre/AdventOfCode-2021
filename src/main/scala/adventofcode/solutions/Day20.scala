@@ -16,26 +16,22 @@ import scala.collection.View
   def next(state: IndexedSeq[IndexedSeq[Boolean]]): IndexedSeq[IndexedSeq[Boolean]] =
     state.indices.tail.init.map(i =>
       state(i).indices.tail.init.map { j =>
+        val range = -1 to 1
         val bits =
           for
-            i1 <- -1 to 1
-            j1 <- -1 to 1
+            i1 <- range
+            j1 <- range
           yield (if state(i + i1)(j + j1) then 1 else 0)
-        val k = Integer.parseInt(bits.mkString, 2)
-        patterns(k)
+        patterns(Integer.parseInt(bits.mkString, 2))
       })
 
   def repeat(n: Int): Int =
-    val o2 = 2 * n
-    val o1 = 2 * o2
-    val padded = (0 until (initial.size + 2 * o1)).map(i => (0 until (initial.head.size + 2 * o1)).map(j =>
-      initial.indices.contains(i - o1) && initial.head.indices.contains(j - o1) && initial(i - o1)(j - o1)))
-    val result = View.iterate(padded, n + 1)(next).last
-    (for
-      i <- o2 until (initial.size + 2 * o1 - o2)
-      j <- o2 until (initial.head.size + 2 * o1 - o2)
-      if result(i)(j)
-    yield 1).sum
+    val offset = 2 * n
+    def pad(array: IndexedSeq[IndexedSeq[Boolean]], k: Int): IndexedSeq[IndexedSeq[Boolean]] =
+      (0 until (array.size + 2 * k)).map(i => (0 until (array.head.size + 2 * k)).map(j =>
+        array.indices.contains(i - k) && array.head.indices.contains(j - k) && array(i - k)(j - k)
+      ))
+    pad(View.iterate(pad(initial, 2 * offset), n + 1)(next).last, -offset).flatten.count(identity)
 
   part(1) = repeat(2)
 
