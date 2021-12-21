@@ -43,16 +43,23 @@ import scala.util.chaining.*
     yield a + b + c
   val counts = sums.groupBy(identity).view.mapValues(_.size).toSeq
 
-  def play2(state: State): (Long, Long) =
-    if state.scores.max >= 21 then
-      val pair = (1L, 0L)
-      if state.turn then pair else pair.swap
-    else
-      counts.map { case (sum, count) =>
-        val (s1, s2) = play2(state.playTurn(p => (p.add(sum), state)))
-        (s1 * count, s2 * count)
-      }.reduce { case ((s11, s21), (s12, s22)) => (s11 + s12, s21 + s22) }
+  type Cache = Map[State, (Long, Long)]
 
-  part(2) = play2(initial).pipe((a, b) => a.max(b))
+  def play2(state: State)(cache: Cache): ((Long, Long), Cache) =
+    cache.get(state) match
+      case Some(value) => (value, cache)
+      case None =>
+        val (value, newCache) =
+          if state.scores.max >= 21 then
+            val pair = (1L, 0L)
+            (if state.turn then pair else pair.swap, cache)
+          else
+            counts.foldLeft(((0L, 0L), cache)) { case (((a1, a2), cache), (sum, count)) =>
+              val ((s1, s2), newCache) = play2(state.playTurn(p => (p.add(sum), state)))(cache)
+              ((a1 + s1 * count, a2 + s2 * count), newCache)
+            }
+        (value, newCache + (state -> value))
+
+  part(2) = play2(initial)(Map.empty).pipe { case ((a, b), _) => a.max(b) }
 
 }
