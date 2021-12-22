@@ -2,7 +2,7 @@ package adventofcode.solutions
 
 import adventofcode.Definitions.*
 
-import scala.collection.immutable.BitSet
+import java.util
 
 @main def Day22 = Day(22) { (input, part) =>
 
@@ -27,53 +27,50 @@ import scala.collection.immutable.BitSet
       status -> AABB(Vec(x0.toInt, y0.toInt, z0.toInt), Vec(x1.toInt, y1.toInt, z1.toInt))
   }
 
+  def compute(seq: IndexedSeq[(Boolean, AABB)]): Long =
+    val boxes = seq.map((_, aabb) => aabb)
+
+    def coordinates(f: Vec => Long): (IndexedSeq[Long], Map[Long, Int]) =
+      val vs = boxes.flatMap(b => Seq(f(b.min), f(b.max) + 1)).distinct.sorted
+      (vs, vs.zipWithIndex.toMap)
+
+    val ((xs, ixs), (ys, iys), (zs, izs)) = (coordinates(_.x), coordinates(_.y), coordinates(_.z))
+
+    inline def pack(x: Long, y: Long, z: Long): Int = (x + y * xs.size + z * xs.size * ys.size).toInt
+
+    inline def rangeFor(min: Long, max: Long, ivs: Map[Long, Int]): Range =
+      ivs(min) until ivs(max + 1)
+
+    // Begin side effects
+
+    import java.util.BitSet
+    val bs = new BitSet(xs.size * ys.size * zs.size)
+    seq.foreach { case (status, aabb) =>
+      val ps = for
+        z <- izs(aabb.min.z) until izs(aabb.max.z + 1)
+        y <- iys(aabb.min.y) until iys(aabb.max.y + 1)
+        x <- ixs(aabb.min.x) until ixs(aabb.max.x + 1)
+      do
+        bs.set(pack(x, y, z), status)
+    }
+
+    inline def thickness(i: Int, seq: IndexedSeq[Long]): Long = seq(i + 1) - seq(i)
+
+    var acc = 0L
+    for
+      z <- zs.indices
+      y <- ys.indices
+      x <- xs.indices
+    do
+      if bs.get(pack(x, y, z)) then
+        acc += thickness(x, xs) * thickness(y, ys) * thickness(z, zs)
+    acc
+
   val r = 50
   val scope = AABB(Vec(-r, -r, -r), Vec(r, r, r))
 
-  part(1) =
-    parsed.foldLeft(Set.empty[Vec]) { case (set, (status, aabb)) =>
-      val ps = for
-        box <- (aabb & scope).toIndexedSeq
-        x <- box.min.x to box.max.x
-        y <- box.min.y to box.max.y
-        z <- box.min.z to box.max.z
-      yield Vec(x, y, z)
-      if status then set ++ ps else set -- ps
-    }.size
+  part(1) = compute(parsed.flatMap { case (status, aabb) => (aabb & scope).map(status -> _) })
 
-  val boxes = parsed.map((_, aabb) => aabb)
-
-  def coordinates(f: Vec => Long): (IndexedSeq[Long], Map[Long, Int]) =
-    val vs = boxes.flatMap(b => Seq(f(b.min), f(b.max), f(b.max) + 1)).distinct.sorted
-    (vs, vs.zipWithIndex.toMap)
-
-  val ((xs, ixs), (ys, iys), (zs, izs)) = (coordinates(_.x), coordinates(_.y), coordinates(_.z))
-
-  def pack(p: Vec): Int = (p.x + p.y * xs.size + p.z * xs.size * ys.size).toInt
-
-  def rangeFor(min: Long, max: Long, ivs: Map[Long, Int]): Range =
-    if min == max then ivs(min) to ivs(min) else ivs(min) to (ivs(max + 1) - 1)
-
-  val compactSpace =
-    parsed.foldLeft(BitSet.empty) { case (bs, (status, aabb)) =>
-      val ps = for
-        x <- rangeFor(aabb.min.x, aabb.max.x, ixs)
-        y <- rangeFor(aabb.min.y, aabb.max.y, iys)
-        z <- rangeFor(aabb.min.z, aabb.max.z, izs)
-      yield pack(Vec(x, y, z))
-      if status then bs ++ ps else bs -- ps
-    }
-
-  def thickness(i: Int, seq: IndexedSeq[Long]): Long = if i == seq.size - 1 then 1 else (seq(i + 1) - 1) - seq(i) + 1
-
-  val all =
-    for {
-      x <- xs.indices
-      y <- ys.indices
-      z <- zs.indices
-      if compactSpace(pack(Vec(x, y, z)))
-    } yield thickness(x, xs) * thickness(y, ys) * thickness(z, zs)
-
-  part(2) = all.sum
+  part(2) = compute(parsed)
 
 }

@@ -8,7 +8,7 @@ object Reflect:
 
   private def generateAOCTestsImpl(using Quotes): Expr[Any] =
     import quotes.reflect.*
-    val ignored = Set[Int](22)
+    val ignored = Set[Int]()
     val values: Seq[(String, (String, Term))] = (1 to 25).map { day =>
       val dayPadded = f"$day%02d"
       val method = Symbol.requiredMethod(s"adventofcode.solutions.Day$dayPadded")
