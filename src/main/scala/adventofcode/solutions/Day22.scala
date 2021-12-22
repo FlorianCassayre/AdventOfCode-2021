@@ -36,35 +36,24 @@ import java.util
 
     val ((xs, ixs), (ys, iys), (zs, izs)) = (coordinates(_.x), coordinates(_.y), coordinates(_.z))
 
-    inline def pack(x: Long, y: Long, z: Long): Int = (x + y * xs.size + z * xs.size * ys.size).toInt
+    val seqReversed = seq.reverse
+    val values =
+      for
+        z <- zs.indices.view
+        zv = zs(z)
+        filteredZ = seqReversed.filter((_, aabb) => zv >= aabb.min.z && zv <= aabb.max.z)
+        if filteredZ.exists(_._1)
+        y <- ys.indices.view
+        yv = ys(y)
+        filteredY = filteredZ.filter((_, aabb) => yv >= aabb.min.y && yv <= aabb.max.y)
+        if filteredY.exists(_._1)
+        x <- xs.indices.view
+        xv = xs(x)
+        if filteredY.find((b, aabb) => xv >= aabb.min.x && xv <= aabb.max.x).exists(_._1)
+      yield
+        (xs(x + 1) - xv) * (ys(y + 1) - yv) * (zs(z + 1) - zv)
 
-    inline def rangeFor(min: Long, max: Long, ivs: Map[Long, Int]): Range =
-      ivs(min) until ivs(max + 1)
-
-    // Begin side effects
-
-    import java.util.BitSet
-    val bs = new BitSet(xs.size * ys.size * zs.size)
-    seq.foreach { case (status, aabb) =>
-      val ps = for
-        z <- izs(aabb.min.z) until izs(aabb.max.z + 1)
-        y <- iys(aabb.min.y) until iys(aabb.max.y + 1)
-        x <- ixs(aabb.min.x) until ixs(aabb.max.x + 1)
-      do
-        bs.set(pack(x, y, z), status)
-    }
-
-    inline def thickness(i: Int, seq: IndexedSeq[Long]): Long = seq(i + 1) - seq(i)
-
-    var acc = 0L
-    for
-      z <- zs.indices
-      y <- ys.indices
-      x <- xs.indices
-    do
-      if bs.get(pack(x, y, z)) then
-        acc += thickness(x, xs) * thickness(y, ys) * thickness(z, zs)
-    acc
+    values.sum
 
   val r = 50
   val scope = AABB(Vec(-r, -r, -r), Vec(r, r, r))
