@@ -37,7 +37,7 @@ _My solutions to the 2021 edition of [Advent of Code](https://adventofcode.com/2
   | **[22](https://adventofcode.com/2021/day/22)** | [solution](src/main/scala/adventofcode/solutions/Day22.scala) | `00:11:01 / 636` | `05:16:46 / 3011` |
   | **[23](https://adventofcode.com/2021/day/23)** | [solution](src/main/scala/adventofcode/solutions/Day23.scala) | `01:25:24 / 1225` | `09:57:37 / 3452` |
   | **[24](https://adventofcode.com/2021/day/24)** | [solution](src/main/scala/adventofcode/solutions/Day24.scala) |  |  |
-  | **[25](https://adventofcode.com/2021/day/25)** | [](src/main/scala/adventofcode/solutions/Day25.scala) |  |  |
+  | **[25](https://adventofcode.com/2021/day/25)** | [solution](src/main/scala/adventofcode/solutions/Day25.scala) |  |  |
 
 </div>
 
